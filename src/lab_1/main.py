@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.stats import kstest, t, norm, chi2, ttest_1samp
+from statsmodels.distributions.empirical_distribution import ECDF
 import pathlib
 import math
 import time
@@ -155,6 +156,23 @@ def plot_normal_fit(data, theoretical_mean, theoretical_std, filename):
     fgr.savefig(output_data_folder / filename)
 
 
+def plot_cdf_comparison(data, theoretical_mean, theoretical_std, filename):
+    """Порівняння емпіричної та теоретичної функцій розподілу (CDF)."""
+    ecdf = ECDF(data)
+    x = np.linspace(min(data), max(data), 1000)
+    cdf = norm.cdf(x, loc=theoretical_mean, scale=theoretical_std)
+
+    fgr = plt.figure(filename, figsize=(10, 6))
+    plt.plot(x, ecdf(x), label="Емпірична CDF", color='blue')
+    plt.plot(x, cdf, label="Теоретична CDF", linestyle="--", color='red')
+    plt.title("Порівняння емпіричної і теоретичної CDF")
+    plt.xlabel("Значення")
+    plt.ylabel("Ймовірність")
+    plt.legend()
+    plt.grid()
+    fgr.savefig(output_data_folder /filename)
+    plt.show()
+
 # Крок 5: Оцінка обсягу N для заданої точності
 
 def evaluate_sample_size():
@@ -209,3 +227,7 @@ plot_statistics(sample_size_results)
 
 # Побудова графіка порівняння нормального розподілу
 plot_normal_fit(normal_numbers, theoretical_mean, theoretical_std, "normal_fit.png")
+
+# Побудова графіка порівняння CDF
+plot_cdf_comparison(normal_numbers, theoretical_mean, theoretical_std, "cdf_comparison.png")
+
