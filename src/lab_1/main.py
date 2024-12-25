@@ -1,9 +1,10 @@
 import numpy as np
-from scipy.stats import kstest, t
+from scipy.stats import kstest, t, norm, chi2, ttest_1samp
 import pathlib
 import math
 import time
 import matplotlib.pyplot as plt
+
 # Створення теки для збереження графіків
 data_folder = pathlib.Path('./../../data/lab_1')
 output_data_folder = data_folder / 'output'
@@ -79,6 +80,25 @@ def kolmogorov_smirnov_test(data):
     statistic, p_value = kstest(data, 'norm')
     return statistic, p_value
 
+def hypothesis_test_normal(data, theoretical_mean, theoretical_std):
+    """Перевірка гіпотези для нормального розподілу"""
+    # Перевірка середнього значення
+    t_statistic, t_p_value = ttest_1samp(data, theoretical_mean)
+
+    # Перевірка дисперсії
+    variance = np.var(data, ddof=1)
+    n = len(data)
+    chi2_statistic = (n - 1) * variance / (theoretical_std**2)
+    chi2_p_value = chi2.sf(chi2_statistic, df=n-1)
+
+    mean_result = "Пройдено" if t_p_value > 0.05 else "Не пройдено"
+    variance_result = "Пройдено" if chi2_p_value > 0.05 else "Не пройдено"
+
+    return {
+        "mean_test": {"t_statistic": t_statistic, "p_value": t_p_value, "result": mean_result},
+        "variance_test": {"chi2_statistic": chi2_statistic, "p_value": chi2_p_value, "result": variance_result}
+    }
+
 # Крок 4: Візуалізація послідовностей і тестів
 
 def plot_sequence(data, title, filename):
@@ -115,6 +135,22 @@ def plot_statistics(results):
     plt.grid()
     plt.show()
     fgr.savefig(output_data_folder / "tests_results.png")
+
+def plot_normal_fit(data, theoretical_mean, theoretical_std, filename):
+    x = np.linspace(min(data), max(data), 1000)
+    pdf = norm.pdf(x, theoretical_mean, theoretical_std)
+
+    fgr = plt.figure(filename, figsize=(10, 6))
+    plt.hist(data, bins=30, density=True, alpha=0.6, color='skyblue', label='Емпіричні дані')
+    plt.plot(x, pdf, 'r', lw=2, label='Теоретичний нормальний розподіл')
+    plt.title("Емпіричний vs Теоретичний нормальний розподіл")
+    plt.xlabel("Значення")
+    plt.ylabel("Щільність")
+    plt.legend()
+    plt.grid()
+    plt.show()
+    fgr.savefig(output_data_folder / filename)
+
 
 # Крок 5: Оцінка обсягу N для заданої точності
 
@@ -156,6 +192,20 @@ if ks_p_value > 0.05:
 else:
     print("Розподіл статистично відрізняється від теоретичного нормального розподілу на рівні значущості 5%.")
 
+# Перевірка гіпотези для нормального розподілу
+theoretical_mean = 0
+theoretical_std = 1
+normal_test_results = hypothesis_test_normal(normal_numbers, theoretical_mean, theoretical_std)
+
+print("\nПеревірка гіпотези про збіг параметрів моделювання:")
+print(f"Середнє значення: t-статистика = {normal_test_results['mean_test']['t_statistic']}, "
+      f"p-значення = {normal_test_results['mean_test']['p_value']}, Результат = {normal_test_results['mean_test']['result']}")
+print(f"Дисперсія: хі-квадрат статистика = {normal_test_results['variance_test']['chi2_statistic']}, "
+      f"p-значення = {normal_test_results['variance_test']['p_value']}, Результат = {normal_test_results['variance_test']['result']}")
+
 # Оцінка обсягу N для заданої точності
 sample_size_results = evaluate_sample_size()
 plot_statistics(sample_size_results)
+
+# Побудова графіка порівняння нормального розподілу
+plot_normal_fit(normal_numbers, theoretical_mean, theoretical_std, "normal_fit.png")

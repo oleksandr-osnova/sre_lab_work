@@ -16,3 +16,6 @@ Mean And Variance::
 
 Tests Results:
 ![convergence](../../data/lab_1/output/tests_results.png)
+
+Empirical vs Theoretical fit:
+![convergence](../../data/lab_1/output/normal_fit.png)
