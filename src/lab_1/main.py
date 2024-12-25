@@ -53,7 +53,7 @@ def aperiodicity_test(data):
     return True
 
 def moments_test(data):
-    """Перевірка збігу моментів"""
+    """Перевірка збігу моментів: середнього та дисперсії"""
     mean = np.mean(data)
     variance = np.var(data, ddof=1)
     expected_mean = 0.5
@@ -62,7 +62,7 @@ def moments_test(data):
 
 
 def covariance_test(data, alpha=0.05):
-    """Перевірка коваріації послідовності"""
+    """Перевірка коваріації між сусідніми значеннями в послідовності"""
     n = len(data)
     mean = np.mean(data)
     covariance = np.cov(data[:-1], data[1:])[0, 1]
@@ -81,7 +81,7 @@ def kolmogorov_smirnov_test(data):
     return statistic, p_value
 
 def hypothesis_test_normal(data, theoretical_mean, theoretical_std):
-    """Перевірка гіпотези для нормального розподілу"""
+    """Перевірка гіпотези для нормального розподілу: середнє та дисперсія"""
     # Перевірка середнього значення
     t_statistic, t_p_value = ttest_1samp(data, theoretical_mean)
 
@@ -102,6 +102,7 @@ def hypothesis_test_normal(data, theoretical_mean, theoretical_std):
 # Крок 4: Візуалізація послідовностей і тестів
 
 def plot_sequence(data, title, filename):
+    """Побудова графіка для візуалізації послідовності."""
     fgr = plt.figure(filename, figsize=(10, 5))
     plt.plot(data, marker='o', linestyle='')
     plt.title(title)
@@ -112,6 +113,7 @@ def plot_sequence(data, title, filename):
     fgr.savefig(output_data_folder / filename)
 
 def plot_statistics(results):
+    """Побудова графіків для оцінки середнього, дисперсії та результатів тестів"""
     results = np.array(results)
     fgr = plt.figure()
     plt.plot(results[:, 0], results[:, 1], label="Середнє")
@@ -137,6 +139,7 @@ def plot_statistics(results):
     fgr.savefig(output_data_folder / "tests_results.png")
 
 def plot_normal_fit(data, theoretical_mean, theoretical_std, filename):
+    """Графік порівняння емпіричних даних із теоретичною щільністю нормального розподілу"""
     x = np.linspace(min(data), max(data), 1000)
     pdf = norm.pdf(x, theoretical_mean, theoretical_std)
 
@@ -155,6 +158,7 @@ def plot_normal_fit(data, theoretical_mean, theoretical_std, filename):
 # Крок 5: Оцінка обсягу N для заданої точності
 
 def evaluate_sample_size():
+    """Оцінка якості при різних значеннях вибірки N"""
     results = []
     for n in range(50, 1050, 50):
         uniform_numbers = generate_uniform_random_numbers_with_formula(n)
@@ -187,10 +191,6 @@ print(f"Збіг моментів: {'Пройдено' if is_moments_ok else 'Н
 print(f"Коваріація: {'Пройдено' if is_covariance_ok else 'Не пройдено'}")
 print(f"Результати тесту Колмогорова-Смірнова для нормального розподілу:")
 print(f"Статистика: {ks_statistic}, p-значення: {ks_p_value}")
-if ks_p_value > 0.05:
-    print("Розподіл не відрізняється від теоретичного нормального розподілу на рівні значущості 5%.")
-else:
-    print("Розподіл статистично відрізняється від теоретичного нормального розподілу на рівні значущості 5%.")
 
 # Перевірка гіпотези для нормального розподілу
 theoretical_mean = 0
