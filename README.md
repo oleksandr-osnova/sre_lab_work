@@ -1,2 +1,2 @@
 # sre_lab_work
-Lab works for sre
+Lab works for SRE
